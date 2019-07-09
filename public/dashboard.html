@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Critique</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--Including Bootstrap-->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+        <!--Custom style extensions-->
+        <link rel="stylesheet" href="styles/common.css" />
+      </head>
+
+      <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="index.html">Critique</a>
+                </div>
+                <p class="navbar-text">Dashboard</p>
+                <div class="navbar-form navbar-left">
+                    <div class="input-group">
+                      <input type="text" class="form-control" placeholder="Search" id="searchQuery">
+                      <div class="input-group-btn">
+                        <button class="btn btn-default" type="button" id="search">
+                          <i class="glyphicon glyphicon-search"></i>
+                        </button>
+                      </div>
+                    </div>
+                </div> 
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+                </ul>
+            </div>
+        </nav>
+          <div class="container">
+              <div class="col-sm-12" id="searchResults">
+                  <h1>Search results</h1>
+                  <div id="searchList"></div>
+              </div>
+              <div class='col-sm-12'>
+                  <h1>Top Rated Movies</h1>
+                  <div id="topRatedMovieList"></div>
+              </div>
+          </div>
+          <script src="scripts/dashboard.js"></script>
+      </body>
+</html>

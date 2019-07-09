@@ -1,0 +1,8 @@
+.container {
+    position: relative;
+    top: 50px;
+}
+
+.row-eq-height {
+    display: flex;
+}
