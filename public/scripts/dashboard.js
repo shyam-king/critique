@@ -10,6 +10,10 @@ $(document).ready(()=>{
     $("#searchResults").hide();
     $("#detailedView").hide();
 
+    $("#favouritesLinkButton").click(()=>{
+        $("html, body").animate({scrollTop: $("#favouritesList").offset().top}, "slow");
+    });
+
     $.ajax("topMovies", {
         method: "GET",
         success: (obj)=>{
@@ -17,11 +21,13 @@ $(document).ready(()=>{
         }
     });
 
+    refreshFavourites();
+
     $("#search").click((ev)=>{
         let query = $("#searchQuery").val();
         $("#searchResults").hide();
         if (query.match(/^(tt)|(nm)|(co)|(ev)|(ch)|(ni)[0-9]+/)) {
-            fillItemCards([query], "searchList");
+            fillItemCards([query], "searchList", "searchresults-");
         }
         else {
             fillItemCardsAfterSearch(query, "searchList", 1);
@@ -45,6 +51,9 @@ $(document).ready(()=>{
 
         $("#addfavourite").hide();
         $("#removefavourite").show();
+
+        refreshFavourites();
+        postActivity(`Added ${$("#detail-title").html()} as a favourite.`);
     });
 
     $("#removefavourite").click(()=>{
@@ -57,6 +66,8 @@ $(document).ready(()=>{
 
         $("#addfavourite").show();
         $("#removefavourite").hide();
+        refreshFavourites();
+        postActivity(`Removed ${$("#detail-title").html()} from favourites.`);
     });
 
     $("#addwatchlist").click(()=>{
@@ -70,6 +81,8 @@ $(document).ready(()=>{
         $("#addwatched").show();
         $("#removewatchlist").show();
         $("#addwatchlist").hide();
+
+        postActivity(`Added ${$("#detail-title").html()} to watch list.`);
     });
 
     $("#removewatchlist").click(()=>{
@@ -84,6 +97,8 @@ $(document).ready(()=>{
         $("#removewatched").hide();
         $("#removewatchlist").hide();
         $("#addwatchlist").show();
+
+        postActivity(`Removed ${$("#detail-title").html()} from watch list.`);
     });
 
     $("#addwatched").click(()=>{
@@ -96,6 +111,7 @@ $(document).ready(()=>{
 
         $("#addwatched").hide();
         $("#removewatched").show();
+        postActivity(`Marked ${$("#detail-title").html()} as watched.`);
     });
 
     $("#removewatched").click(()=>{
@@ -108,10 +124,13 @@ $(document).ready(()=>{
 
         $("#removewatched").hide();
         $("#addwatched").show();
+        postActivity(`Unmarked ${$("#detail-title").html()} as watched.`);
     });
 });
 
-function fillItemCards(obj, divId) {
+function fillItemCards(obj, divId, prefix) {
+    if (prefix == undefined)
+        prefix = "";
     $(`#${divId}`).html("");
     let row = undefined;
 
@@ -125,30 +144,30 @@ function fillItemCards(obj, divId) {
         let element = obj[i];
 
         $(row).append(`
-<div class="col-sm-4 thumbnail showCard" id="${element}" onclick="showDetails('${element}');">
+<div class="col-sm-4 thumbnail showCard" id="${prefix}${element}" onclick="showDetails('${element}');">
     <h3>Title</h3>
     <img style="width: 200px; height:200px">
-    <p><span class="label label-default">Type:</span>   <span id="${element}-type"></span></p>
-    <p><span class="label label-default">IMDb rating:</span>   <span id="${element}-imdbrating"></span></p>
-    <p><span class="label label-default">Rated:</span>   <span id="${element}-rated"></span></p>
-    <p><span class="label label-default">Language:</span>   <span id="${element}-lang"></span></p>
-    <p><span class="label label-default">Plot:</span>   <span id="${element}-plot"></span></p>
+    <p><span class="label label-default">Type:</span>   <span id="${prefix}${element}-type"></span></p>
+    <p><span class="label label-default">IMDb rating:</span>   <span id=${prefix}"${element}-imdbrating"></span></p>
+    <p><span class="label label-default">Rated:</span>   <span id="${prefix}${element}-rated"></span></p>
+    <p><span class="label label-default">Language:</span>   <span id="${prefix}${element}-lang"></span></p>
+    <p><span class="label label-default">Plot:</span>   <span id="${prefix}${element}-plot"></span></p>
 </div>
                 `);
 
         $.ajax(`http://www.omdbapi.com/?apikey=4cca6a50&i=${element}`, {
             method: "GET",
             success: (obj) => {
-                $(`#${element} h3`).html(obj.Title + `  <span class=badge>${obj.Year}</span>`);
+                $(`#${prefix}${element} h3`).html(obj.Title + `  <span class=badge>${obj.Year}</span>`);
                 if (obj.Poster != "N/A")
-                    $(`#${element} img`).attr("src", obj.Poster);
+                    $(`#${prefix}${element} img`).attr("src", obj.Poster);
                 else 
-                    $(`#${element} img`).attr("src", "res/image-not-available.jpg");
-                $(`#${element}-rated`).html(obj.Rated);
-                $(`#${element}-imdbrating`).html(obj.imdbRating);
-                $(`#${element}-lang`).html(obj.Language);
-                $(`#${element}-plot`).html(obj.Plot);
-                $(`#${element}-type`).html(obj.Type);
+                    $(`#${prefix}${element} img`).attr("src", "res/image-not-available.jpg");
+                $(`#${prefix}${element}-rated`).html(obj.Rated);
+                $(`#${prefix}${element}-imdbrating`).html(obj.imdbRating);
+                $(`#${prefix}${element}-lang`).html(obj.Language);
+                $(`#${prefix}${element}-plot`).html(obj.Plot);
+                $(`#${prefix}${element}-type`).html(obj.Type);
             }
         });
         
@@ -290,5 +309,26 @@ function showDetails(id) {
             //scroll to title
             $("html, body").animate({ scrollTop: $("#detailedView").offset().top + 50}, "slow");
         }
+    });
+}
+
+function refreshFavourites() {
+    $.ajax("favourites",{
+        success: (obj)=>{
+            if (obj.length > 0) {
+                $("#favouritesList p").hide();
+                fillItemCards(obj, "favouritesList", "favourites-");
+            }
+            else {
+                $("#favouritesList").html("<p>No favourites yet.</p>");
+            }
+        }
+    });
+}
+
+function postActivity(content) {
+    $.ajax("activity", {
+        method: "POST",
+        data: {content: content}
     });
 }

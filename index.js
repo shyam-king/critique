@@ -61,6 +61,7 @@ app.post("/newuser", (req, res)=>{
                 sqlConnection.query(`INSERT INTO user${result.insertId}_activities(activity) VALUES ("Joined Critique.")`);
                 sqlConnection.query(`CREATE TABLE user${result.insertId}_profile(field varchar(20), content text, tag char(10) default 'none');`);
                 sqlConnection.query(`INSERT INTO user${result.insertId}_profile(field, content, tag) VALUES ('username', '${username}', 'username')`);
+                sqlConnection.query(`INSERT INTO user${result.insertId}_profile(field, content, tag) VALUES ('full name', '${username}', 'fullname')`);
                 res.status(statusCodes.Ok).send({message: "The user has been added!", status: "added"});
             }
         }
@@ -256,6 +257,70 @@ app.get("/activity", (req,res)=>{
         res.status(statusCodes.Ok).send(result);
     }
 })
+
+app.get("/profile/:username", (req,res)=>{
+    let token = req.cookies.token;
+    if (!verifyToken(token)) {
+        res.status(statusCodes.BadRequest).send({message: "Please login."});
+    }
+    else {
+        let username = req.params.username;
+        let result, userid;
+        result = sqlConnection.query(`select id from users where username = '${username}'`);
+        if (result.length > 0) {
+            userid = result[0].id;
+
+            result = sqlConnection.query(`SELECT * FROM user${userid}_profile;`);
+            res.status(statusCodes.Ok).send(result);
+        }
+        else {
+            res.status(statusCodes.BadRequest).send({message: "No such user."});
+        }
+    }
+});
+
+app.get("/activity/:username", (req, res)=>{
+    let token = req.cookies.token;
+    if (!verifyToken(token)) {
+        res.status(statusCodes.BadRequest).send({message: "Please login."});
+    }
+    else {
+        let username = req.params.username;
+        let result, userid;
+        result = sqlConnection.query(`select id from users where username = '${username}'`);
+        if (result.length > 0) {
+            userid = result[0].id;
+
+            result = sqlConnection.query(`SELECT activity FROM user${userid}_activities order by time desc;`);
+            res.status(statusCodes.Ok).send(result);
+        }
+        else {
+            res.status(statusCodes.BadRequest).send({message: "No such user."});
+        }
+    }
+});
+
+app.get("/favourites", (req,res)=>{
+    let token = req.cookies.token;
+    let username = verifyToken(token);
+
+    if (!username) {
+        res.status(statusCodes.BadRequest).send({message: "Please login."});
+    }
+    else {
+        let result, userid;
+        result = sqlConnection.query(`SELECT id from users where username = '${username}'`);
+        userid = result[0].id;
+
+        result = sqlConnection.query(`select id from user${userid}_showstatus where status->"$.favourite" = "true";`);
+        let response = [];
+        result.forEach((element)=>{
+            response.push(element.id);
+        });
+
+        res.status(statusCodes.Ok).send(response);
+    }
+});
 
 app.post("/updateProfile", (req, res)=>{
     let profile = req.body.profile;

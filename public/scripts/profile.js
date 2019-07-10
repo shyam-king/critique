@@ -70,11 +70,39 @@ $(document).ready(()=>{
         document.location = "login.html";
     });
 
+    $("#search").click(()=>{
+        let q = $("#searchQuery").val();
+        $.ajax(`profile/${q}`, {
+            success: (obj) => {
+                $("#title").html(`${q}'s profile`);
+                $("#searchQuery").parent().removeClass("has-error");
+                $("#editprofilebutton").hide();
+                populateProfile(obj, "profile-", false);
+                $.ajax(`activity/${q}`, {
+                    success: (obj2) => {
+                        populateActivity(obj2, "profile-");
+                    }
+                });
+                
+            },
+            error: () => {
+                $("#searchQuery").parent().addClass("has-error");
+            }
+        }); 
+
+        
+    });
+
 });
 
-function populateProfile(profile, idprefix) {
+function populateProfile(profile, idprefix, app=true) {
     if (idprefix == undefined) 
         idprefix = "profile-";
+    
+    if (!app) {
+        $(`#${idprefix}table .${idprefix}profileitem`).remove();
+    }
+
     profile.forEach((element)=>{
         if (element.tag != 'none') {
             if (element.tag.search(/pic$/i) >= 0)
@@ -85,7 +113,7 @@ function populateProfile(profile, idprefix) {
 
         if (element.tag.search(/pic$/i) < 0) {
             $(`#${idprefix}table tbody`).append(`
-            <tr>
+            <tr class="${idprefix}profileitem">
                 <td class="text-uppercase">${element.field}</td>
                 <td>${element.content}</td>
             <tr>
@@ -95,6 +123,7 @@ function populateProfile(profile, idprefix) {
 }
 
 function populateActivity(activities, idprefix) {
+    $(`#${idprefix}activities ul`).html("");
     activities.forEach((element)=>{
         $(`#${idprefix}activities ul`).append(`
             <li class="list-group-item">${element.activity}</li>

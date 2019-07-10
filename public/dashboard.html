@@ -21,6 +21,9 @@
                     <a class="navbar-brand" href="index.html">Critique</a>
                 </div>
                 <p class="navbar-text">Dashboard</p>
+                <ul class="nav navbar-nav">
+                    <li><a href="#" id="favouritesLinkButton">Favourites</a></li>
+                </ul>
                 <div class="navbar-form navbar-left">
                     <div class="input-group">
                       <input type="text" class="form-control" placeholder="Search" id="searchQuery">
@@ -73,6 +76,13 @@
                   <h1>Top Rated Movies</h1>
                   <div id="topRatedMovieList"></div>
               </div>
+              <div class='col-sm-12'>
+                    <h1>My favourites</h1>
+                    
+                    <div id="favouritesList">
+                            <p>No favourites yet.</p>
+                    </div>
+                </div>
           </div>
           <script src="scripts/dashboard.js"></script>
       </body>
