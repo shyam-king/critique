@@ -29,6 +29,86 @@ $(document).ready(()=>{
         $("#searchResults").show("fast");
         $("html, body").animate({ scrollTop: $("#searchResults").offset().top + 50 }, "slow");
     });
+
+    $("#logout").click(()=>{
+        document.cookie = "token=; path=/";
+        document.location = "login.html";
+    });
+
+    $("#addfavourite").click(()=>{
+        $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/favourite`, {
+            method: "POST",
+            data: {
+                value: "true"
+            }
+        });
+
+        $("#addfavourite").hide();
+        $("#removefavourite").show();
+    });
+
+    $("#removefavourite").click(()=>{
+        $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/favourite`, {
+            method: "POST",
+            data: {
+                value: "false"
+            }
+        });
+
+        $("#addfavourite").show();
+        $("#removefavourite").hide();
+    });
+
+    $("#addwatchlist").click(()=>{
+        $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/watchlist`, {
+            method: "POST",
+            data: {
+                value: "watching"
+            }
+        });
+
+        $("#addwatched").show();
+        $("#removewatchlist").show();
+        $("#addwatchlist").hide();
+    });
+
+    $("#removewatchlist").click(()=>{
+        $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/watchlist`, {
+            method: "POST",
+            data: {
+                value: "none"
+            }
+        });
+
+        $("#addwatched").hide();
+        $("#removewatched").hide();
+        $("#removewatchlist").hide();
+        $("#addwatchlist").show();
+    });
+
+    $("#addwatched").click(()=>{
+        $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/watchlist`, {
+            method: "POST",
+            data: {
+                value: "watched"
+            }
+        });
+
+        $("#addwatched").hide();
+        $("#removewatched").show();
+    });
+
+    $("#removewatched").click(()=>{
+        $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/watchlist`, {
+            method: "POST",
+            data: {
+                value: "watching"
+            }
+        });
+
+        $("#removewatched").hide();
+        $("#addwatched").show();
+    });
 });
 
 function fillItemCards(obj, divId) {
@@ -84,6 +164,7 @@ function fillItemCards(obj, divId) {
 }
 
 function fillItemCardsAfterSearch(query, divId, page) {
+    // TODO: display error when no response
     $.ajax(`http://www.omdbapi.com/?apikey=4cca6a50&s=${query}&page=${page}`, {
         success: (obj) => {
             if (obj.Response == "True") {
@@ -139,6 +220,69 @@ function showDetails(id) {
             }
             else 
                 $("#detail-seasons").parent().hide();
+            
+            //set id to the div.data-imdbid
+            $("#detailedView").attr("data-imdbid", id);
+
+            //control the buttons
+            //  fetch status from server and update
+            $.ajax(`status/${id}/watchlist`, {
+                success: (obj) => {
+                    $("#addwatchlist").hide();
+                    $("#addwatched").hide();
+                    $("#removewatched").hide();
+                    $("#removewatchlist").hide();
+                    switch(obj) {
+                        case "none":
+                            $("#addwatchlist").show();
+                            break;
+                        case "watching":
+                            $("#removewatchlist").show();
+                            $("#addwatched").show();
+                            break;
+                        case "watched":
+                            $("#removewatchlist").show();
+                            $("#removewatched").show();
+                            break;
+                    }
+                },
+                error : (obj, error1, error2) => {
+                    //same as watchlist = 'none'
+                    $.ajax(`status/${id}/watchlist`, {
+                        method: "POST",
+                        data: {
+                            value: "none"
+                        }
+                    });
+                    $("#addwatchlist").show();
+                    $("#addwatched").hide();
+                    $("#removewatched").hide();
+                    $("#removewatchlist").hide();
+                }
+            });
+
+            $.ajax(`status/${id}/favourite`, {
+                success: (obj)=>{
+                    $("#addfavourite").hide();
+                    $("#removefavourite").hide();
+
+                    if (obj == "true") 
+                        $("#removefavourite").show();
+                    else 
+                        $("#addfavourite").show();
+                },
+                error : () => {
+                    $.ajax(`status/${id}/favourite`, {
+                        method: "POST",
+                        data: {
+                            value: "false"
+                        }
+                    });
+
+                    $("#addfavourite").show();
+                    $("#removefavourite").hide();
+                }
+            });
 
             //show title
             $("#detailedView").show("slow");

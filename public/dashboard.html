@@ -32,7 +32,8 @@
                     </div>
                 </div> 
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+                    <li><a id="profile" href="#"><span class="glyphicon glyphicon-user"></span> Profile</a></li>
+                    <li><a id="logout" href="#"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
                 </ul>
             </div>
         </nav>
@@ -40,9 +41,19 @@
               <div class="col-sm-12" id="detailedView" data-imdbid="">
                     <h1><span id="detail-title">Title</span>   <span class="badge" id="detail-year">year</span></h1>
                     <img class="thumbnail" style="width: 400px; height:400px; margin:12px auto; ">
+                    <br>
+                    <div class="col-sm-12 btn-group btn-group-justified">
+                        <a class="btn btn-success" id="addfavourite">Add to favourites</a>
+                        <a class="btn btn-danger" id="removefavourite">Remove from favourites</a>
+                        <a class="btn btn-warning" id="addwatchlist">Add to watchlist</a>
+                        <a class="btn btn-warning" id="removewatchlist">Remove from watchlist</a>
+                        <a class="btn btn-primary" id="addwatched">Mark as watched</a>
+                        <a class="btn btn-primary" id="removewatched">Unmark as watched</a>
+                    </div>
+                    <br><br>
                     <p><span class="label label-default">Type:</span>   <span id="detail-type"></span></p>
                     <p><span class="label label-default">IMDb rating:</span>   <span id="detail-imdbrating"></span></p>
-                    <p><span class="label label-default">IMDb id:</span>   <span id="detail-imdbrating"></span></p>
+                    <p><span class="label label-default">IMDb id:</span>   <span id="detail-id"></span></p>
                     <p><span class="label label-default">Rated:</span>   <span id="detail-rated"></span></p>
                     <p><span class="label label-default">Language:</span>   <span id="detail-lang"></span></p>
                     <p><span class="label label-default">Genre:</span>   <span id="detail-genre"></span></p>

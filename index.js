@@ -47,6 +47,7 @@ app.post("/newuser", (req, res)=>{
                 password = crypt.digest("base64");
                 result = sqlConnection.query(`INSERT INTO users (username, password) values ('${username}', '${password}');`);
                 sqlConnection.query(`CREATE TABLE user${result.insertId}_showstatus(id varchar(20), status json );`);
+                sqlConnection.query(`CREATE TABLE user${result.insertId}_activities(time timestamp, activity text);`);
                 res.status(statusCodes.Ok).send({message: "The user has been added!", status: "added"});
             }
         }
@@ -102,7 +103,112 @@ app.get("/topMovies", (req,res)=>{
         ids.push(result[i].id);
     }
     res.status(200).send(ids);
-})
+});
+
+app.get("/status/:id/:key", (req, res)=>{
+    let id = req.params.id;
+    let key = req.params.key;
+
+    //prevent sql injections
+    id = htmlEntities.encode(id);
+    key = htmlEntities.encode(key);
+
+    let result;
+    let username = verifyToken(req.cookies.token);
+    if (!username) {
+        res.status(statusCodes.BadRequest).send({message: "Token could not be verified. Kindly relogin."});
+    }
+    else {
+        result = sqlConnection.query(`SELECT id FROM users WHERE username='${username}';`);
+        let userid = result[0].id;
+        result = sqlConnection.query(`SELECT status->>'$.${key}' FROM user${userid}_showstatus where id = '${id}';`);
+        if (result.length > 0) 
+            res.status(statusCodes.Ok).send(result[0][`status->>'$.${key}'`]);
+        else
+            res.status(statusCodes.BadRequest).send({message: "no such key!"});
+            
+    }
+});
+
+app.get("/status/:id", (req, res)=>{
+    let id = req.params.id;
+
+    //prevent sql injections
+    id = htmlEntities.encode(id);
+
+    let result;
+    
+    let username = verifyToken(req.cookies.token);
+    if (!username) {
+        res.status(statusCodes.BadRequest).send({message: "Token could not be verified. Kindly relogin."});
+    }
+    else {
+        result = sqlConnection.query(`SELECT id FROM users WHERE username='${username}';`);
+        let userid = result[0].id;
+        result = sqlConnection.query(`SELECT status FROM user${userid}_showstatus WHERE id='${id}';`);
+        if (result.length > 0)
+                res.status(statusCodes.Ok).send(result[0].status);
+        else
+            res.status(statusCodes.BadRequest).send({message: "no such record"});
+    }
+});
+
+app.post("/status/:id/:key", (req,res)=>{
+    let id = req.params.id;
+    let key = req.params.key;
+    let value = req.body.value;
+
+    //prevent sql injection
+    id = htmlEntities.encode(id);
+    key = htmlEntities.encode(key);
+    value = htmlEntities.encode(value);
+
+    let token = req.cookies.token;
+
+    let username = verifyToken(token);
+    let userid, result;
+
+    if (!username) {
+        res.status(statusCodes.BadRequest).send({message: "Could not verify token. Please log in to your account."});
+    }
+    else {
+        result = sqlConnection.query(`SELECT id FROM users WHERE username = '${username}'`);
+        userid = result[0].id;
+
+        result = sqlConnection.query(`SELECT * FROM user${userid}_showstatus WHERE id = '${id}'`);
+        if (result.length == 0) {
+            sqlConnection.query(`INSERT INTO user${userid}_showstatus(id, status) VALUES ('${id}', '{}')`);
+        }
+
+        result = sqlConnection.query(`UPDATE user${userid}_showstatus SET status = JSON_SET(status, '$.${key}', '${value}') WHERE id = '${id}'`);
+        res.status(statusCodes.Ok).send();
+    }
+});
+
+app.post("/activity", (req,res)=>{
+    let content = req.body.content;
+    if (!content) {
+        res.status(statusCodes.BadRequest).send({message: "Received empty activity"});
+    }
+    else {
+        content = htmlEntities.encode(content);
+
+        let token = req.cookies.token;
+        let username = verifyToken(token);
+
+        if (!username) {
+            res.status(statusCodes.BadRequest).send({message: "Could not verify token. Please log in again!"});
+        }
+        else {
+            let userid;
+            let result = sqlConnection.query(`SELECT id FROM users where username  = '${username}';`);
+            userid = result[0].id;
+
+            sqlConnection.query(`INSERT INTO user${userid}_activities(activity) VALUES ("${content}");`);
+            res.status(statusCodes.Ok).send();
+        }
+    }
+});
 
 app.listen(3000, function(){
     sqlConnection = new sql({
@@ -137,7 +243,9 @@ function checkGoodUsername(username) {
 function verifyToken(token) {
     let result;
     sqlConnection.query("DELETE FROM tokens WHERE expiry < NOW();");
-    result = sqlConnection.query(`SELECT username FROM tokens WHERE token = ${token};`);
+    if (!token)
+        return false;
+    result = sqlConnection.query(`SELECT username FROM tokens WHERE token = '${token}';`);
     if (result.length > 0) return result[0].username;
     return false;
 }
