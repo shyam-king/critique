@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Critique</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <!--Including Bootstrap-->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+        <!--Custom style extensions-->
+        <link rel="stylesheet" href="styles/common.css" />
+      </head>
+
+      <body>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="index.html">Critique</a>
+                </div>
+                <p class="navbar-text">Profile</p>
+                <div class="navbar-form navbar-left">
+                        <div class="input-group">
+                          <input type="text" class="form-control" placeholder="Search users" id="searchQuery">
+                          <div class="input-group-btn">
+                            <button class="btn btn-default" type="button" id="search">
+                              <i class="glyphicon glyphicon-search"></i>
+                            </button>
+                          </div>
+                        </div>
+                    </div> 
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a id="dashboard" href="dashboard.html"><span class="glyphicon glyphicon-home"></span> Dashboard</a></li>
+                        <li><a id="logout" href="#"><span class="glyphicon glyphicon-log-out"></span> Log out</a></li>
+                    </ul>
+            </div>
+        </nav>
+          <div class="container">
+              <h1>My Profile</h1>
+                <div class="row row-eq-height" id="profilepreview">
+                    <div class="col-sm-6" style="text-align: center">
+                        <h2 id="profile-fullname">user name</h2>
+                        <img id="profile-pic" src="res/default_user_avatar.jpg" style="width: 300px; height: 300px; border-radius: 150px;">
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="card">
+                            <h3 class="card-header">About</h3>
+                            <table id="profile-table" class="table">
+                                <tr class="text-uppercase">
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <button class="btn btn-success" type='button' id="editprofilebutton">Edit Profile</button>
+                    </div>
+                    <div class="col-sm-12" id="editprofile">
+                        <div class="card">
+                            <h3 class="card-header">Contents</h3>
+                            <table id="editprofile-table" class="table">
+                                <tr class="text-uppercase">
+                                    <th>Field</th>
+                                    <th>Value</th>
+                                </tr>
+                            </table>
+                            <div class="form-group">
+                                <h3>Add content</h3>
+                                <p>Using the same field twice will update the previous value.</p>
+                                <p>Empty content will delete the field.</p>
+                                <p>Setting "full name" field will reflect the name displlayed above the avatar.</p>
+                                <label for="editprofile-field">Field:</label>
+                                <input class="form-control-horizontal" type="text" id="editprofile-field">
+                                <label for="editprofile-content">Content:</label>
+                                <input class="form-control-horizontal" type="text" id="editprofile-content">
+                                <a href="#" class="btn btn-primary form-control-horizontal" id="editprofile-add">Add</a>
+                            </div>
+                            <button type="button" class="btn btn-success" id="editprofile-submit">Submit</button>
+                        </div>
+                    </div>   
+                    <div class="col-sm-12" id="profile-activities">
+                        <h3>Activities</h3>
+                        <ul class="list-group">
+                        </ul>
+                    </div>                 
+                </div>
+          </div>
+          <script src="scripts/profile.js"></script>
+      </body>
+</html>

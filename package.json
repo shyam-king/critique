@@ -19,7 +19,9 @@
   "dependencies": {
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
+    "express-fileupload": "^1.1.5",
     "html-entities": "^1.2.1",
+    "multer": "^1.4.1",
     "sync-mysql": "^3.0.1"
   }
 }

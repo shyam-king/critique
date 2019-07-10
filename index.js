@@ -4,6 +4,17 @@ const path = require("path");
 const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const htmlEntities = require("html-entities").XmlEntities;
+const multer = require("multer");
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + file.originalname)
+    }
+});
+var upload = multer({storage: storage});
+   
 
 const statusCodes = {
     BadRequest: 400,
@@ -14,7 +25,6 @@ var app = new express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
-app.use(express.static(path.join(__dirname, "public")));
 
 var sqlConnection;
 
@@ -48,6 +58,9 @@ app.post("/newuser", (req, res)=>{
                 result = sqlConnection.query(`INSERT INTO users (username, password) values ('${username}', '${password}');`);
                 sqlConnection.query(`CREATE TABLE user${result.insertId}_showstatus(id varchar(20), status json );`);
                 sqlConnection.query(`CREATE TABLE user${result.insertId}_activities(time timestamp, activity text);`);
+                sqlConnection.query(`INSERT INTO user${result.insertId}_activities(activity) VALUES ("Joined Critique.")`);
+                sqlConnection.query(`CREATE TABLE user${result.insertId}_profile(field varchar(20), content text, tag char(10) default 'none');`);
+                sqlConnection.query(`INSERT INTO user${result.insertId}_profile(field, content, tag) VALUES ('username', '${username}', 'username')`);
                 res.status(statusCodes.Ok).send({message: "The user has been added!", status: "added"});
             }
         }
@@ -209,6 +222,82 @@ app.post("/activity", (req,res)=>{
         }
     }
 });
+
+app.get("/profile", (req,res)=>{
+    let token = req.cookies.token;
+    let username = verifyToken(token);
+
+    if (!username) {
+        res.status(statusCodes.BadRequest).send({message: "Please log in!"});
+    }
+    else {
+        let result, userid;
+        result = sqlConnection.query(`SELECT id FROM users WHERE username = '${username}';`);
+        userid = result[0].id;
+
+        result = sqlConnection.query(`SELECT * FROM user${userid}_profile;`);
+        res.status(statusCodes.Ok).send(result);
+    }
+});
+
+app.get("/activity", (req,res)=>{
+    let token = req.cookies.token;
+    let username = verifyToken(token);
+
+    if (!username){
+        res.status(statusCodes.BadRequest).send({message: "Please login"});
+    }
+    else {
+        let result, userid;
+        result = sqlConnection.query(`SELECT id from users where username = '${username}'`);
+        userid = result[0].id;
+
+        result = sqlConnection.query(`SELECT activity FROM user${userid}_activities ORDER BY time desc;`);
+        res.status(statusCodes.Ok).send(result);
+    }
+})
+
+app.post("/updateProfile", (req, res)=>{
+    let profile = req.body.profile;
+    let token = req.cookies.token;
+
+    let username = verifyToken(token);
+
+    if (!username)
+        res.status(statusCodes.BadRequest).send({message: "Please login"});
+    else {
+        let result, userid;
+        result = sqlConnection.query(`SELECT id from users where username = '${username}'`);
+        userid = result[0].id;
+
+        profile.forEach(element => {
+            element.field = htmlEntities.encode(element.field.toLowerCase());
+            element.content = htmlEntities.encode(element.content);
+            result = sqlConnection.query(`SELECT * FROM user${userid}_profile WHERE field = '${element.field}'`);
+            if (result.length > 0) {
+                if (element.content == "") {
+                    sqlConnection.query(`DELETE FROM user${userid}_profile where field = '${element.field}'`);
+                }
+                else {
+                    sqlConnection.query(`UPDATE user${userid}_profile SET content = '${element.content}' WHERE field = '${element.field}';`);
+                }
+            }
+            else {
+                if (element.content != "")
+                    sqlConnection.query(`INSERT INTO user${userid}_profile(field, content) VALUES ('${element.field}', '${element.content}')`);
+            }
+        });
+        sqlConnection.query(`INSERT INTO user${userid}_activities(activity) VALUES ("Updated profile.");`);
+        res.status(statusCodes.Ok).send();
+    }
+});
+
+app.post("/updateProfilePic", upload.single("profilepic"), (req,res)=>{
+    console.log(req.file);
+    res.send("OK");
+});
+
+app.use(express.static(path.join(__dirname, "public")));
 
 app.listen(3000, function(){
     sqlConnection = new sql({
