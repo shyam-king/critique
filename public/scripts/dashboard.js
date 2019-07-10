@@ -8,6 +8,7 @@ $(document).ready(()=>{
     })
 
     $("#searchResults").hide();
+    $("#detailedView").hide();
 
     $.ajax("topMovies", {
         method: "GET",
@@ -26,6 +27,7 @@ $(document).ready(()=>{
             fillItemCardsAfterSearch(query, "searchList", 1);
         }
         $("#searchResults").show("fast");
+        $("html, body").animate({ scrollTop: $("#searchResults").offset().top + 50 }, "slow");
     });
 });
 
@@ -43,7 +45,7 @@ function fillItemCards(obj, divId) {
         let element = obj[i];
 
         $(row).append(`
-<div class="col-sm-4 thumbnail" id="${element}" >
+<div class="col-sm-4 thumbnail showCard" id="${element}" onclick="showDetails('${element}');">
     <h3>Title</h3>
     <img style="width: 200px; height:200px">
     <p><span class="label label-default">Type:</span>   <span id="${element}-type"></span></p>
@@ -57,8 +59,11 @@ function fillItemCards(obj, divId) {
         $.ajax(`http://www.omdbapi.com/?apikey=4cca6a50&i=${element}`, {
             method: "GET",
             success: (obj) => {
-                $(`#${element} h3`).html(obj.Title);
-                $(`#${element} img`).attr("src", obj.Poster);
+                $(`#${element} h3`).html(obj.Title + `  <span class=badge>${obj.Year}</span>`);
+                if (obj.Poster != "N/A")
+                    $(`#${element} img`).attr("src", obj.Poster);
+                else 
+                    $(`#${element} img`).attr("src", "res/image-not-available.jpg");
                 $(`#${element}-rated`).html(obj.Rated);
                 $(`#${element}-imdbrating`).html(obj.imdbRating);
                 $(`#${element}-lang`).html(obj.Language);
@@ -66,7 +71,7 @@ function fillItemCards(obj, divId) {
                 $(`#${element}-type`).html(obj.Type);
             }
         });
-
+        
         if (i%3 == 2) {
             $(`#${divId}`).append(row);
             row = undefined;
@@ -106,5 +111,40 @@ function fillItemCardsAfterSearch(query, divId, page) {
             }
         }
     });
-    $("html, body").animate({ scrollTop: 0 }, "slow");
+}
+
+function showDetails(id) {
+    $.ajax(`http://www.omdbapi.com/?apikey=4cca6a50&i=${id}`, {
+        success: (obj)=>{
+
+            //fill contents of title
+            $("#detail-title").html(obj.Title);
+            $(`#detailedView img`).attr("src", obj.Poster);
+            $(`#detail-rated`).html(obj.Rated);
+            $(`#detail-imdbrating`).html(obj.imdbRating);
+            $(`#detail-lang`).html(obj.Language);
+            $(`#detail-plot`).html(obj.Plot);
+            $(`#detail-type`).html(obj.Type);
+            $(`#detail-year`).html(obj.Year);
+            $(`#detail-id`).html(id);
+            $(`#detail-genre`).html(obj.Genre);
+            $(`#detail-director`).html(obj.Director);
+            $(`#detail-writer`).html(obj.Writer);
+            $(`#detail-actors`).html(obj.Actors);
+            $(`#detail-released`).html(obj.Released);
+            $(`#detail-awards`).html(obj.Awards);
+            if (obj.totalSeasons) {
+                $("#detail-seasons").parent().show();
+                $("#detail-seasons").html(obj.totalSeasons);
+            }
+            else 
+                $("#detail-seasons").parent().hide();
+
+            //show title
+            $("#detailedView").show("slow");
+
+            //scroll to title
+            $("html, body").animate({ scrollTop: $("#detailedView").offset().top + 50}, "slow");
+        }
+    });
 }

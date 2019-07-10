@@ -46,6 +46,7 @@ app.post("/newuser", (req, res)=>{
                 let crypt = new crypto.createHmac("sha256", password);
                 password = crypt.digest("base64");
                 result = sqlConnection.query(`INSERT INTO users (username, password) values ('${username}', '${password}');`);
+                sqlConnection.query(`CREATE TABLE user${result.insertId}_showstatus(id varchar(20), status json );`);
                 res.status(statusCodes.Ok).send({message: "The user has been added!", status: "added"});
             }
         }
