@@ -11,7 +11,11 @@ $(document).ready(()=>{
     $("#detailedView").hide();
 
     $("#favouritesLinkButton").click(()=>{
-        $("html, body").animate({scrollTop: $("#favouritesList").offset().top}, "slow");
+        $("html, body").animate({scrollTop: $("#favouritesList").offset().top - 50}, "slow");
+    });
+
+    $("#watchListLinkButton").click(()=>{
+        $("html, body").animate({scrollTop: $("#watchingList").offset().top - 150}, "slow");
     });
 
     $.ajax("topMovies", {
@@ -22,6 +26,8 @@ $(document).ready(()=>{
     });
 
     refreshFavourites();
+    refreshWatchingList();
+    refreshWatchedList();
 
     $("#search").click((ev)=>{
         let query = $("#searchQuery").val();
@@ -33,7 +39,7 @@ $(document).ready(()=>{
             fillItemCardsAfterSearch(query, "searchList", 1);
         }
         $("#searchResults").show("fast");
-        $("html, body").animate({ scrollTop: $("#searchResults").offset().top + 50 }, "slow");
+        $("html, body").animate({ scrollTop: 0 }, "slow");
     });
 
     $("#logout").click(()=>{
@@ -41,6 +47,8 @@ $(document).ready(()=>{
         document.location = "login.html";
     });
 
+
+    //favourite button controls
     $("#addfavourite").click(()=>{
         $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/favourite`, {
             method: "POST",
@@ -70,6 +78,7 @@ $(document).ready(()=>{
         postActivity(`Removed ${$("#detail-title").html()} from favourites.`);
     });
 
+    //watchlist controls
     $("#addwatchlist").click(()=>{
         $.ajax(`status/${$("#detailedView").attr("data-imdbid")}/watchlist`, {
             method: "POST",
@@ -78,11 +87,11 @@ $(document).ready(()=>{
             }
         });
 
-        $("#addwatched").show();
         $("#removewatchlist").show();
         $("#addwatchlist").hide();
 
         postActivity(`Added ${$("#detail-title").html()} to watch list.`);
+        refreshWatchingList();
     });
 
     $("#removewatchlist").click(()=>{
@@ -93,12 +102,14 @@ $(document).ready(()=>{
             }
         });
 
-        $("#addwatched").hide();
         $("#removewatched").hide();
+        $("#addwatched").show();
         $("#removewatchlist").hide();
         $("#addwatchlist").show();
 
         postActivity(`Removed ${$("#detail-title").html()} from watch list.`);
+        refreshWatchingList();
+        refreshWatchedList();
     });
 
     $("#addwatched").click(()=>{
@@ -111,7 +122,11 @@ $(document).ready(()=>{
 
         $("#addwatched").hide();
         $("#removewatched").show();
+        $("#removewatchlist").hide();
+        $("#addwatchlist").hide();
         postActivity(`Marked ${$("#detail-title").html()} as watched.`);
+        refreshWatchingList();
+        refreshWatchedList();
     });
 
     $("#removewatched").click(()=>{
@@ -124,7 +139,10 @@ $(document).ready(()=>{
 
         $("#removewatched").hide();
         $("#addwatched").show();
+        $("#addwatchlist").show();
         postActivity(`Unmarked ${$("#detail-title").html()} as watched.`);
+        refreshWatchingList();
+        refreshWatchedList();
     });
 });
 
@@ -183,7 +201,6 @@ function fillItemCards(obj, divId, prefix) {
 }
 
 function fillItemCardsAfterSearch(query, divId, page) {
-    // TODO: display error when no response
     $.ajax(`http://www.omdbapi.com/?apikey=4cca6a50&s=${query}&page=${page}`, {
         success: (obj) => {
             if (obj.Response == "True") {
@@ -208,6 +225,9 @@ function fillItemCardsAfterSearch(query, divId, page) {
                     `);
                 }
                 $("#searchList").append("<br>", ul);
+            }
+            else {
+                $("#searchList").html(`<p>No search results. Either no match or query too vague.</p>`);
             }
         }
     });
@@ -245,27 +265,28 @@ function showDetails(id) {
 
             //control the buttons
             //  fetch status from server and update
+            $("#addwatchlist").hide();
+            $("#addwatched").hide();
+            $("#removewatched").hide();
+            $("#removewatchlist").hide();
             $.ajax(`status/${id}/watchlist`, {
                 success: (obj) => {
-                    $("#addwatchlist").hide();
-                    $("#addwatched").hide();
-                    $("#removewatched").hide();
-                    $("#removewatchlist").hide();
                     switch(obj) {
-                        case "none":
-                            $("#addwatchlist").show();
-                            break;
                         case "watching":
                             $("#removewatchlist").show();
                             $("#addwatched").show();
                             break;
                         case "watched":
-                            $("#removewatchlist").show();
                             $("#removewatched").show();
                             break;
+                        default:
+                            //none
+                            $("#addwatchlist").show();
+                            $("#addwatched").show();
                     }
                 },
                 error : (obj, error1, error2) => {
+                    console.log("error");
                     //same as watchlist = 'none'
                     $.ajax(`status/${id}/watchlist`, {
                         method: "POST",
@@ -274,12 +295,11 @@ function showDetails(id) {
                         }
                     });
                     $("#addwatchlist").show();
-                    $("#addwatched").hide();
-                    $("#removewatched").hide();
-                    $("#removewatchlist").hide();
+                    $("#addwatched").show();
                 }
             });
-
+            
+            //fetch favourite details from server and update
             $.ajax(`status/${id}/favourite`, {
                 success: (obj)=>{
                     $("#addfavourite").hide();
@@ -321,6 +341,34 @@ function refreshFavourites() {
             }
             else {
                 $("#favouritesList").html("<p>No favourites yet.</p>");
+            }
+        }
+    });
+}
+
+function refreshWatchedList() {
+    $.ajax("watchlist/watched", {
+        success: (obj)=>{
+            if (obj.length > 0) {
+                $("#watchedList p").remove();
+                fillItemCards(obj, "watchedList", "watched-");
+            }
+            else {
+                $("#watchedList").html("<p>No shows added as watched yet.</p>");
+            }
+        }
+    });
+}
+
+function refreshWatchingList() {
+    $.ajax("watchlist/watching", {
+        success: (obj)=>{
+            if (obj.length > 0) {
+                $("#watchingList p").remove();
+                fillItemCards(obj, "watchingList", "watched-");
+            }
+            else {
+                $("#watchingList").html("<p>No shows watching right now.</p>");
             }
         }
     });

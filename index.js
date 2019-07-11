@@ -357,6 +357,31 @@ app.post("/updateProfile", (req, res)=>{
     }
 });
 
+app.get("/watchlist/:status", (req,res)=>{
+    let token = req.cookies.token;
+    let username = verifyToken(token);
+    let status = req.params.status;
+
+    status = htmlEntities.encode(status);
+    
+    if (!username) {
+        res.status(statusCodes.BadRequest).send({message: "Please login"});
+    }
+    else {
+        let result, userid;
+        result = sqlConnection.query(`SELECT id from users where username = '${username}'`);
+        userid = result[0].id;
+
+        result = sqlConnection.query(`SELECT id from user${userid}_showstatus where status->"$.watchlist" = "${status}"`);
+        let response = [];
+        result.forEach((element)=>{
+            response.push(element.id);
+        });
+
+        res.status(statusCodes.Ok).send(response);
+    }
+});
+
 app.post("/updateProfilePic", upload.single("profilepic"), (req,res)=>{
     console.log(req.file);
     res.send("OK");
