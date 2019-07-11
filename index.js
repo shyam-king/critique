@@ -67,6 +67,7 @@ app.post("/newuser", (req, res)=>{
                 sqlConnection.query(`CREATE TABLE user${result.insertId}_profile(field varchar(20), content text, tag char(10) default 'none');`);
                 sqlConnection.query(`INSERT INTO user${result.insertId}_profile(field, content, tag) VALUES ('username', '${username}', 'username')`);
                 sqlConnection.query(`INSERT INTO user${result.insertId}_profile(field, content, tag) VALUES ('full name', '${username}', 'fullname')`);
+                sqlConnection.query(`INSERT INTO user${result.insertId}_profile(field, content, tag) VALUES ('profile pic', 'res/default_user_avatar.jpg', 'pic')`);  
                 res.status(statusCodes.Ok).send({message: "The user has been added!", status: "added"});
             }
         }
@@ -406,9 +407,27 @@ app.get("/getTrailer/:title", (req, res)=>{
 })
 
 //TODO photopupload
-app.post("/updateProfilePic", upload.single("profilepic"), (req,res)=>{
-    console.log(req.file);
-    res.send("OK");
+app.post("/updateProfilePic", upload.single("profilepic-upload"), (req,res)=>{
+    let path = req.file.path;
+    path = path.substr(7); //remove the public part
+    let token = req.cookies.token;
+    
+    let username = verifyToken(token);
+    if (!username)
+        res.status(statusCodes.BadRequest).send({message: "Please log in."});
+    else {
+        let result, userid;
+
+        result = sqlConnection.query(`SELECT id from users where username = '${username}'`);
+        userid = result[0].id;
+
+        sqlConnection.query(`UPDATE user${userid}_profile SET content = '${path}' where tag='pic'`);
+        sqlConnection.query(`INSERT INTO user${userid}_activities(activity) values ("Updated profile picture.")`);
+        //redirect back to profile
+        res.send(`<head> 
+        <meta http-equiv="refresh" content="0; URL=profile.html" />
+        </head>`);
+    }
 });
 
 app.use(express.static(path.join(__dirname, "public")));

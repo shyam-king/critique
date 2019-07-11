@@ -77,6 +77,7 @@ $(document).ready(()=>{
                 $("#title").html(`${q}'s profile`);
                 $("#searchQuery").parent().removeClass("has-error");
                 $("#editprofilebutton").hide();
+                $("#editprofilepicbutton").hide();
                 populateProfile(obj, "profile-", false);
                 $.ajax(`activity/${q}`, {
                     success: (obj2) => {
@@ -89,10 +90,13 @@ $(document).ready(()=>{
                 $("#searchQuery").parent().addClass("has-error");
             }
         }); 
-
-        
     });
 
+    $("#editprofilepic-form").hide();
+
+    $("#editprofilepicbutton").click(()=>{
+        $("#editprofilepic-form").show("slow");
+    });
 });
 
 function populateProfile(profile, idprefix, app=true) {
