@@ -1,3 +1,7 @@
+//youtube api key: 
+//AIzaSyBeO6l3LeTg5f8oZiUCZx74MVWD8Um3FrI
+
+
 const express = require("express");
 const sql = require("sync-mysql");
 const path = require("path");
@@ -5,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const crypto = require("crypto");
 const htmlEntities = require("html-entities").XmlEntities;
 const multer = require("multer");
+const request = require("request");
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'public/uploads')
@@ -382,6 +387,26 @@ app.get("/watchlist/:status", (req,res)=>{
     }
 });
 
+app.get("/getTrailer/:title", (req, res)=>{
+    let token = req.cookies.token;
+    if (!verifyToken(token)) {
+        res.status(statusCodes.BadRequest).send({message: "Please login"});
+    }
+    else {
+        let title=htmlEntities.encode(req.params.title);
+        console.log(title);
+        request(`https://www.googleapis.com/youtube/v3/search?q=${title}+official+trailer&part=snippet&type=video&key=AIzaSyBeO6l3LeTg5f8oZiUCZx74MVWD8Um3FrI`, {json:true}, (err, response, body)=>{
+            let id = body.items[0].id.videoId;
+            if (id == undefined) {
+                res.status(statusCodes.BadRequest).send({message: "No results"});
+            }
+            else 
+                res.status(statusCodes.Ok).send(`https://www.youtube.com/embed/${id}`);
+        });
+    }
+})
+
+//TODO photopupload
 app.post("/updateProfilePic", upload.single("profilepic"), (req,res)=>{
     console.log(req.file);
     res.send("OK");

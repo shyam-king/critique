@@ -259,6 +259,13 @@ function showDetails(id) {
             }
             else 
                 $("#detail-seasons").parent().hide();
+
+            //trailer
+            $.ajax(`getTrailer/${obj.Title.replace(" ", "+")}`, {
+                success: (obj)=>{
+                    $("#detail-trailer").attr("src", obj);
+                }
+            });
             
             //set id to the div.data-imdbid
             $("#detailedView").attr("data-imdbid", id);

@@ -44,7 +44,12 @@
           <div class="container">
               <div class="col-sm-12" id="detailedView" data-imdbid="">
                     <h1><span id="detail-title">Title</span>   <span class="badge" id="detail-year">year</span></h1>
-                    <img class="thumbnail" style="width: 400px; height:400px; margin:12px auto; ">
+                    <div class="col-sm-6">
+                        <img class="thumbnail" style="width: 400px; height:400px; margin:12px auto; ">
+                    </div>
+                    <div class="col-sm-6">
+                        <iframe id="detail-trailer" class="thumbnail" style="margin: 12px auto" width="400" height="400" src="" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
                     <br>
                     <div class="col-sm-12 btn-group btn-group-justified">
                         <a class="btn btn-success" id="addfavourite">Add to favourites</a>
@@ -55,19 +60,22 @@
                         <a class="btn btn-primary" id="removewatched">Unmark as watched</a>
                     </div>
                     <br><br>
-                    <p><span class="label label-default">Type:</span>   <span id="detail-type"></span></p>
-                    <p><span class="label label-default">IMDb rating:</span>   <span id="detail-imdbrating"></span></p>
-                    <p><span class="label label-default">IMDb id:</span>   <span id="detail-id"></span></p>
-                    <p><span class="label label-default">Rated:</span>   <span id="detail-rated"></span></p>
-                    <p><span class="label label-default">Language:</span>   <span id="detail-lang"></span></p>
-                    <p><span class="label label-default">Genre:</span>   <span id="detail-genre"></span></p>
-                    <p><span class="label label-default">Director:</span>   <span id="detail-director"></span></p>
-                    <p><span class="label label-default">Writer(s):</span>   <span id="detail-writer"></span></p>
-                    <p><span class="label label-default">Actors:</span>   <span id="detail-actors"></span></p>
-                    <p><span class="label label-default">Seasons:</span>   <span id="detail-seasons"></span></p>
-                    <p><span class="label label-default">Plot:</span>   <span id="detail-plot"></span></p>
-                    <p><span class="label label-default">Released:</span>   <span id="detail-released"></span></p>
-                    <p><span class="label label-default">Awards:</span>   <span id="detail-awards"></span></p>
+                    <div class="col-sm-12">
+                        <p><span class="label label-default">Type:</span>   <span id="detail-type"></span></p>
+                        <p><span class="label label-default">IMDb rating:</span>   <span id="detail-imdbrating"></span></p>
+                        <p><span class="label label-default">IMDb id:</span>   <span id="detail-id"></span></p>
+                        <p><span class="label label-default">Rated:</span>   <span id="detail-rated"></span></p>
+                        <p><span class="label label-default">Language:</span>   <span id="detail-lang"></span></p>
+                        <p><span class="label label-default">Genre:</span>   <span id="detail-genre"></span></p>
+                        <p><span class="label label-default">Director:</span>   <span id="detail-director"></span></p>
+                        <p><span class="label label-default">Writer(s):</span>   <span id="detail-writer"></span></p>
+                        <p><span class="label label-default">Actors:</span>   <span id="detail-actors"></span></p>
+                        <p><span class="label label-default">Seasons:</span>   <span id="detail-seasons"></span></p>
+                        <p><span class="label label-default">Plot:</span>   <span id="detail-plot"></span></p>
+                        <p><span class="label label-default">Released:</span>   <span id="detail-released"></span></p>
+                        <p><span class="label label-default">Awards:</span>   <span id="detail-awards"></span></p>
+                    </div>
+                   
               </div>
               <div class="col-sm-12" id="searchResults">
                   <h1>Search results</h1>
