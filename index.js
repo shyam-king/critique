@@ -394,8 +394,7 @@ app.get("/getTrailer/:title", (req, res)=>{
     }
     else {
         let title=htmlEntities.encode(req.params.title);
-        console.log(title);
-        request(`https://www.googleapis.com/youtube/v3/search?q=${title}+official+trailer&part=snippet&type=video&key=AIzaSyBeO6l3LeTg5f8oZiUCZx74MVWD8Um3FrI`, {json:true}, (err, response, body)=>{
+        request(`https://www.googleapis.com/youtube/v3/search?q=${title}+official+trailer&part=snippet&type=video&key=AIzaSyBeO6l3LeTg5f8oZiUCZx74MVWD8Um3FrI&order=rating`, {json:true}, (err, response, body)=>{
             let id = body.items[0].id.videoId;
             if (id == undefined) {
                 res.status(statusCodes.BadRequest).send({message: "No results"});

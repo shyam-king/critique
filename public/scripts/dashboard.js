@@ -39,7 +39,7 @@ $(document).ready(()=>{
             fillItemCardsAfterSearch(query, "searchList", 1);
         }
         $("#searchResults").show("fast");
-        $("html, body").animate({ scrollTop: 0 }, "slow");
+        $("html, body").animate({ scrollTop: $("#searchResults").offset().top - 50 }, "slow");
     });
 
     $("#logout").click(()=>{
@@ -261,7 +261,7 @@ function showDetails(id) {
                 $("#detail-seasons").parent().hide();
 
             //trailer
-            $.ajax(`getTrailer/${obj.Title.replace(" ", "+")}`, {
+            $.ajax(`getTrailer/${obj.Title}`, {
                 success: (obj)=>{
                     $("#detail-trailer").attr("src", obj);
                 }
